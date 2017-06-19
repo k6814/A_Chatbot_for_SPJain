@@ -1,17 +1,17 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[66]:
 
 import pandas as pd
 
 
-# In[2]:
+# In[67]:
 
 df = pd.read_excel('Data.xlsx')
 
 
-# In[3]:
+# In[68]:
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore')
 
 # ### Vectorising Questions 
 
-# In[4]:
+# In[69]:
 
 import string #allows for format()
 import pandas
@@ -91,7 +91,7 @@ for doc in mydoclist:
 
 # ### Vectorising Key Words in Question
 
-# In[5]:
+# In[70]:
 
 import string #allows for format()
 import pandas
@@ -158,43 +158,43 @@ for doc in mydoclist:
     #print(cntr)
 
 
-# In[6]:
+# In[71]:
 
 test2C = test2.copy()
 
 
-# In[7]:
+# In[72]:
 
 test2C.columns = range(test.shape[1], test.shape[1]+ test2.shape[1])
 
 
-# In[8]:
+# In[73]:
 
 test2.index = range(len(test2))
 test.index = range(len(test))
 test2C.index = range(len(test2C))
 
 
-# In[9]:
+# In[74]:
 
 test3 = pd.concat([test.reset_index(drop=True), test2C], axis=1)
 
 #test has vectorised questions in dataframe. test2 does the same for nouns. test3 dataframe concatenates test and test2
 
 
-# In[10]:
+# In[75]:
 
 test['Question'] = list(df.Questions)
 test['Answer'] = list(df.Answers)
 
 
-# In[11]:
+# In[76]:
 
 test2['Question'] = list(df.Questions)
 test2['Answer'] = list(df.Answers)
 
 
-# In[12]:
+# In[77]:
 
 test3['Question'] = list(df.Questions)
 test3['Answer'] = list(df.Answers)
@@ -214,7 +214,7 @@ test3['Answer'] = list(df.Answers)
 
 # ### Applying Random Forest 
 
-# In[13]:
+# In[78]:
 
 TestDF = pd.DataFrame()
 TrainDF = pd.DataFrame()
@@ -253,7 +253,7 @@ def RFModel(df, test_size=0.1):
             prob.append(max(i))
         TestDF['Prediction Probability'] = prob
         testAcc = accuracy_score(y_test, testPredicted)
-        print('Test accuracy is {}'.format(testAcc))
+        #print('Test accuracy is {}'.format(testAcc))
     trainPredicted = model.predict(X_train)
     train = pd.DataFrame(df.loc[list(X_train.index)])
     TrainDF = train[['Question']]
@@ -264,32 +264,38 @@ def RFModel(df, test_size=0.1):
         tprob.append(max(i))
     TrainDF['Prediction Probability'] = tprob
     trainAcc = accuracy_score(y_train, trainPredicted)
-    print('Training accuracy is {}'.format(trainAcc))
+    #print('Training accuracy is {}'.format(trainAcc))
 
 
-# In[14]:
+# In[79]:
 
-RFModel(test2)
+#RFModel(test2)
 
 
-# In[15]:
+# In[80]:
 
 TestDF.to_excel('new.xlsx')
 
 
-# In[16]:
+# In[81]:
 
 TrainDF.to_excel('trainRF.xlsx')
 
 
-# In[17]:
+# In[82]:
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+# In[83]:
 
 RFModel(test2, test_size=0)
 
 
 # ### Creating rules, fallback responses etc. 
 
-# In[18]:
+# In[1]:
 
 courseNames = {
     'bdva' : ['big data & visual analytics', 'big data & analytics', 'big data and visual analytics', 'big data and analytics'  'big data analytics', 'data analytics','business analytics', 'big data', 'data science', 'analytics', 'data mining', 'data', 'visualisation','machine learning', 'artificial intelligence', 'bdap', 'bdva', 'bdvap'],
@@ -309,17 +315,17 @@ courseNames = {
 }
 
 defaultResp = {
-    'bdva' : 'You can have a word with Mr. Rakesh Shetty, M: +91- 82912 87131 | Email id rakesh.shetty@spjain.org. He handles all the application for the Big Data & Visual Analytics Course.',
-    'dmm' : 'I would like to inform you that we have our Admissions Manager Mr. Ashutosh Kulkarni, based out of Mumbai.  He handles all applications for Digital Marketing & Metrics . You can get in touch with him directly. His contact details are tel no +91 9702896668, email id ashutosh.kulkarni@spjain.org . He would be your point of contact as far as DMM @ S P Jain is concerned.',
+    'bdva' : 'You can have a word with Mr. Rakesh Shetty, M: +91- 82912 87131 | Email id rakesh.shetty@spjain.org. He handles all the application for the Big Data and Visual Analytics Course.',
+    'dmm' : 'I would like to inform you that we have our Admissions Manager Mr. Ashutosh Kulkarni, based out of Mumbai.  He handles all applications for Digital Marketing and Metrics . You can get in touch with him directly. His contact details are tel no +91 9702896668, email id ashutosh.kulkarni@spjain.org . He would be your point of contact as far as DMM @ S P Jain is concerned.',
     'rm' : 'You can have a word with Mr. Ashutosh Kulkarni, M: +91 9702896668, email id ashutosh.kulkarni@spjain.org. He handles all applications for Retail Management.',
     'emba': 'I would like to inform you that we have our Assistant Manager- Professional Programs for EMBA Ms. Nikita Marwaha , based out of our Mumbai Campus. Ms. Nikita handles all applications for the EMBA program. You can get in touch with her directly. Her contact details are tel no 8879866774 email id nikita.marwaha@spjain.org. She would be your point of contact as far as EMBA @ S P Jain is concerned.',
-    'gmba': 'I would like to inform you that we have our Admissions Manager Ms. Mona Dabas, based out of New Delhi. Ms. Mona handles all applications for MGB & GMBA coming from your region. You can get in touch with her directly. Her contact details are tel no +91 9818206168. Email id mona.dabas@spjain.org. She would be your point of contact as far as PG @ S P Jain is concerned',
-    'mgb' : 'I would like to inform you that we have our Admissions Manager Mr. Noel Thomas, based out of Mumbai. Mr. Noel handles all applications for MGB & GMBA coming from your region. You can get in touch with him directly. His contact details are tel no +91 9322240630, email id noel.thomas@spjain.org. He would be your point of contact as far as PG @ S P Jain is concerned.',
-    'mba' : 'I would like to inform you that we have our Admissions Manager Mr. Noel Thomas, based out of Mumbai. Mr. Noel handles all applications for MGB & GMBA coming from West India You can get in touch with him directly. His contact details are tel no +91 9322240630, email id noel.thomas@spjain.org. He would be your point of contact as far as PG @ S P Jain is concerned.',
+    'gmba': 'I would like to inform you that we have our Admissions Manager Ms. Mona Dabas, based out of New Delhi. Ms. Mona handles all applications for MGB and GMBA coming from your region. You can get in touch with her directly. Her contact details are tel no +91 9818206168. Email id mona.dabas@spjain.org. She would be your point of contact as far as PG @ S P Jain is concerned',
+    'mgb' : 'I would like to inform you that we have our Admissions Manager Mr. Noel Thomas, based out of Mumbai. Mr. Noel handles all applications for MGB and GMBA coming from your region. You can get in touch with him directly. His contact details are tel no +91 9322240630, email id noel.thomas@spjain.org. He would be your point of contact as far as PG @ S P Jain is concerned.',
+    'mba' : 'I would like to inform you that we have our Admissions Manager Mr. Noel Thomas, based out of Mumbai. Mr. Noel handles all applications for MGB and GMBA coming from West India You can get in touch with him directly. His contact details are tel no +91 9322240630, email id noel.thomas@spjain.org. He would be your point of contact as far as PG @ S P Jain is concerned.',
     'dba' : 'I would like to inform you that we have our Director- Professional PG Programs Dr. Raja Roy Choudhury, based out of Mumbai.  He handles all applications for DMM/DBA. You can get in touch with him directly. His contact details are tel no 8879489681/8655502525, email id raja.royc@spjain.org  . He would be your point of contact as far as DBA/DMM @ S P Jain is concerned.',
     'GFMB' : 'You can have a word with Ms. Tejal Dhulla, M: 9987081818|Email id tejal.dhulla@spjain.org. She handles all the application for the GFMB. She would be your point of contact as far as GFMB @ S P Jain is concerned.',
-    'bba' : 'I would like to inform you that we have our Admissions Manager Mr. Atharv Kale, based in Mumbai.  Atharv handles all applications for BBA, BBC & BEC coming from your region. You can get in touch with him directly. His contact details are Tel no +91 9920211171, email id: atharv.kale@spjain.org. He would be your point of contact as far as BBA, BBC & BEC @ S P Jain is concerned.',
-    'bec' : 'I would like to inform you that we have our Admissions Manager Mr. Atharv Kale, based in Mumbai.  Atharv handles all applications for BBA, BBC & BEC coming from your region. You can get in touch with him directly. His contact details are Tel no +91 9920211171, email id: atharv.kale@spjain.org. He would be your point of contact as far as BBA, BBC & BEC @ S P Jain is concerned.',
+    'bba' : 'I would like to inform you that we have our Admissions Manager Mr. Atharv Kale, based in Mumbai.  Atharv handles all applications for BBA, BBC and BEC coming from your region. You can get in touch with him directly. His contact details are Tel no +91 9920211171, email id: atharv.kale@spjain.org. He would be your point of contact as far as BBA, BBC and BEC @ S P Jain is concerned.',
+    'bec' : 'I would like to inform you that we have our Admissions Manager Mr. Atharv Kale, based in Mumbai.  Atharv handles all applications for BBA, BBC and BEC coming from your region. You can get in touch with him directly. His contact details are Tel no +91 9920211171, email id: atharv.kale@spjain.org. He would be your point of contact as far as BBA, BBC and BEC @ S P Jain is concerned.',
     'bbc' : 'You can have a word with Mr. Mahesh Sharma, M: +91-7875874565  | Email id mahesh.sharma@spjain.org. He handles all the application for the Bachelor Of Business Communication.',
     'mgluxm': 'I would like to inform you that we have our Admissions Manager Ms. Neha Sikri , based out of Mumbai.  She handles all applications for MGLuxM. You can get in touch with her directly. Her contact details are tel no +91 9867633315, email id Neha.sikri@spjain.org. She would be your point of contact as far as MGLuxM @ S P Jain is concerned.',
     'fintech': 'I would like to inform you that we have our Admissions Manager Mr.Nikhil Gore , based out of Mumbai.  He handles all applications for Fintech  . You can get in touch with him directly. His contact details are tel no +91 9445431213, email id nikhil.gore@spjain.org. He would be your point of contact as far as DMM @ S P Jain is concerned.'
@@ -328,18 +334,13 @@ defaultResp = {
 
 greetings = [' hi', ' hello', ' how are you', ' are you there', ' there?', ' hey', ' good morning', ' good afternoon', ' good evening', ' yo ']
 
-thanks = ['thanks', 'thank', 'thx', 'thnx', 'thnks', 'thnk', 'bye', 'okay', 'ok']
+thanks = ['thanks', 'thank', 'thx', 'thnx', 'thnks', 'thnk', 'bye', 'okay', 'ok', 'cool', 'sure']
 
 
-# In[ ]:
-
-
-
-
-# In[19]:
+# In[2]:
 
 def checkQ(j):
-    if '?' in j or j[0:5].lower() =='what ' or j[0:2].lower()=='do' or j[0:3].lower()=='can'     or j[0:2].lower() == 'is' or j[0:5].lower()=='would' or j[:4].lower() == 'how ':
+    if '?' in j or 'what ' in j or 'do' in j or 'can' in j     or j[0:2].lower() == 'is' or j[0:5].lower()=='would' or 'how ' in j:
         return True
     else:
         return False
@@ -354,25 +355,161 @@ def removePunct(S):
 
 # Defining the chatbot function. Integrates random forest predictions, rules, fallback answers etc. It takes user input, responds to it, and asks for further input from user. Input 'quit' to stop the function.
 
-# In[24]:
+# In[3]:
 
-def chatbot():
-    c = ''
-    prev = ''
+# def chatbot():
+#     c = ''
+#     prev = ''
+#     on = False
+#     while on == False:
+#         new = False
+#         q = input().lower()
+#         if checkQ(q) == False:
+#             for i in thanks:
+#                 if i in removePunct(q).split():
+#                     new = True
+#                     prev = ''
+#                     print('SP Jain Assistant: ' + "It's my pleasure to have helped you. All the best!" + '\n')
+#                     break
+                    
+#         q = removePunct(q) + ' ' + prev
+#         query = c + ' ' + q + ' ' + prev
+        
+
+#         if new:
+#             continue
+            
+#         if q == 'quit ' + prev:
+#             on = True
+            
+#         else:
+#             N = [tf(word, query) for word in vocabulary2]
+#             probability = max(max(model.predict_proba(N)))
+#             find = False
+#             fin = False
+#             counter = 0
+#             for course in sorted(courseNames):
+#                 if find:
+#                     break
+#                 else:    
+#                     for name in courseNames[course]:
+#                         counter +=1
+#                         if name in q:
+#                             find = True
+#                             new = True
+#                             prev = ''
+#                             query = q.replace(name, ' ' + str(course) + ' ')
+#                             #Q = [tf(word, query) for word in vocabulary]
+#                             N = [tf(word, query) for word in vocabulary2]
+#                             prob = max(max(model.predict_proba(N)))
+#                             if prob>0.35:
+#                                 print('SP Jain Assistant: ' + model.predict(N)[0] + '\n')
+#                             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
+#                                 print('SP Jain Assistant: ' + model.predict(N)[0] + '\n' + defaultResp[course] + '\n')
+#                             else:
+#                                 print('SP Jain Assistant: ' + defaultResp[course] + '\n')
+#                             c = ' ' + course
+#                             break
+                            
+#                         elif counter == 97:
+#                             for course in sorted(courseNames):
+#                                 if fin:
+#                                     break
+#                                 else:
+#                                     for name in courseNames[course]:
+#                                         if name in query:
+#                                             prev = ''
+#                                             fin = True
+#                                             new = True
+#                                             query = query.replace(name, ' ' + course + ' ')
+#                                             #Q = [tf(word, query) for word in vocabulary]
+#                                             N = [tf(word, query) for word in vocabulary2]
+#                                             prob = max(max(model.predict_proba(N)))
+#                                             if prob>0.35:
+#                                                 print('SP Jain Assistant: ' + model.predict(N)[0] + '\n')
+#                                             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
+#                                                 print('SP Jain Assistant: ' + model.predict(N)[0] + '\n' + defaultResp[course] + '\n')
+#                                             else:
+#                                                 print('SP Jain Assistant: ' + defaultResp[course] + '\n')
+#                                             break
+                        
+
+#             if find == False and fin == False:   
+#                 if probability > 0.4:
+#                     new = True
+#                     prev = ''
+#                     print('SP Jain Assistant: ' + model.predict(N)[0] + '\n')
+
+
+#                 if new == False:    
+#                     for word in greetings:
+#                         if word in query:
+#                             new = True
+#                             prev = ''
+#                             print('SP Jain Assistant: ' + 'Hello! How may I help you?' + '\n')
+#                             break
+
+#                         elif word == greetings[-1]:
+#                             new = True
+#                             print('SP Jain Assistant: ' + 'May I know which program you are looking for?' + '\n')
+#                             prev = q
+
+
+
+
+# <br><br><br><br><br><br><br>
+
+# In[4]:
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+# In[5]:
+
+# chatbot()
+
+
+# In[6]:
+
+chatTracker = {}
+
+
+# In[10]:
+
+rep = False
+Help = False
+repeat = False
+def spjBot(q, chat, c, prev):
+    global rep
+    global Help
+    global repeat
     on = False
     while on == False:
         new = False
-        q = input().lower()
+        q = q.lower()
         if checkQ(q) == False:
             for i in thanks:
                 if i in removePunct(q).split():
                     new = True
                     prev = ''
-                    print('SP Jain Assistant: ' + "It's my pleasure to have helped you. All the best!" + '\n')
+                    chatTracker[chat]['prev'] = ''
+                    rep = False
+                    if Help == True:
+                        return "It's my pleasure to have helped you. All the best!" + '\n'
+                    else:
+                        return 'Good Luck!'
                     break
+                for i in greetings:
+                    if i.strip() in removePunct(q).split():
+                        new = True
+                        prev = ''
+                        chatTracker[chat]['prev'] = ''
+                        rep = False
+                        return 'Hi. Let me know if you need any help.'
                     
         q = removePunct(q) + ' ' + prev
-        query = c + ' ' + q + ' ' + prev
+        query = chatTracker[chat]['c'] + ' ' + q + ' ' + chatTracker[chat]['prev']
         
 
         if new:
@@ -396,18 +533,35 @@ def chatbot():
                         if name in q:
                             find = True
                             new = True
+                            Help = True
                             prev = ''
+                            chatTracker[chat]['prev'] = ''
+                            chatTracker[chat]['c'] = ' ' + course
                             query = q.replace(name, ' ' + str(course) + ' ')
                             #Q = [tf(word, query) for word in vocabulary]
                             N = [tf(word, query) for word in vocabulary2]
                             prob = max(max(model.predict_proba(N)))
                             if prob>0.35:
-                                print('SP Jain Assistant: ' + model.predict(N)[0] + '\n')
+                                rep = False
+                                return model.predict(N)[0] + '\n'
                             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
-                                print('SP Jain Assistant: ' + model.predict(N)[0] + '\n' + defaultResp[course] + '\n')
+                                if rep == False:
+                                    rep = True
+                                    repeat = True
+                                    return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
+                                else:
+                                    rep = False
+                                    Help = False
+                                    return 'I am not quite sure what you mean. Our course representative may be able to help you on this.'
                             else:
-                                print('SP Jain Assistant: ' + defaultResp[course] + '\n')
-                            c = ' ' + course
+                                if rep == False:
+                                    repeat = True
+                                    rep = True
+                                    return defaultResp[course] + '\n'
+                                else:
+                                    rep = False
+                                    Help = False
+                                    return 'I am not quite sure what you mean. Our course representative may be able to help you on this.'
                             break
                             
                         elif counter == 97:
@@ -418,26 +572,43 @@ def chatbot():
                                     for name in courseNames[course]:
                                         if name in query:
                                             prev = ''
+                                            chatTracker[chat]['prev'] = ''
                                             fin = True
                                             new = True
+                                            Help = True
                                             query = query.replace(name, ' ' + course + ' ')
                                             #Q = [tf(word, query) for word in vocabulary]
                                             N = [tf(word, query) for word in vocabulary2]
                                             prob = max(max(model.predict_proba(N)))
                                             if prob>0.35:
-                                                print('SP Jain Assistant: ' + model.predict(N)[0] + '\n')
+                                                return model.predict(N)[0] + '\n'
                                             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
-                                                print('SP Jain Assistant: ' + model.predict(N)[0] + '\n' + defaultResp[course] + '\n')
+                                                if repeat == False:
+                                                    repeat = True
+                                                    rep = True
+                                                    return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
+                                                else:
+                                                    Help = False
+                                                    return 'I am not quite sure what you mean. Our course representative may be able to help you on this.'
                                             else:
-                                                print('SP Jain Assistant: ' + defaultResp[course] + '\n')
-                                            break
+                                                if repeat == False:
+                                                    repeat = True
+                                                    rep = True
+                                                    return defaultResp[course] + '\n'
+                                                else:
+                                                    Help = False
+                                                    return 'I am not quite sure what you mean. Our course representative may be able to help you on this.'
+                                                break
                         
 
             if find == False and fin == False:   
                 if probability > 0.4:
+                    Help = True
                     new = True
                     prev = ''
-                    print('SP Jain Assistant: ' + model.predict(N)[0] + '\n')
+                    rep = False
+                    chatTracker[chat]['prev'] = ''
+                    return model.predict(N)[0] + '\n'
 
 
                 if new == False:    
@@ -445,28 +616,19 @@ def chatbot():
                         if word in query:
                             new = True
                             prev = ''
-                            print('SP Jain Assistant: ' + 'Hello! How may I help you?' + '\n')
+                            rep = False
+                            chatTracker[chat]['prev'] = ''
+                            return 'Hello! How may I help you?' + '\n'
                             break
 
                         elif word == greetings[-1]:
                             new = True
-                            print('SP Jain Assistant: ' + 'May I know which program you are looking for?' + '\n')
-                            prev = q
+                            chatTracker[chat]['prev'] = q
+                            rep = False
+                            return 'May I know which program you are looking for?' + '\n'
+                            
 
 
-
-
-# <br><br><br><br><br><br><br>
-
-# In[25]:
-
-import warnings
-warnings.filterwarnings('ignore')
-
-
-# In[27]:
-
-chatbot()
 
 
 # In[ ]:

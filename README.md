@@ -9,13 +9,14 @@ Due to confidentiality of certain data, chat data transcript used in the project
 
 ### To run/test the bot:
 
-1. Download Question_Answers.xlsx, NounsExtraction.py, Chatbot.py to the same folder
-2. Execute NounsExtraction.py
-3. Execute Chatbot.py
-4. Go ahead and ask your queries!
-5. To exit, type 'quit' 
+1. Download the Telegram Messenger app from Google Play Store or Apple Store on your phone.
+2. Open the app. Enter your phone number followed by the verification code recieved. 
+3. From your phone browser, go to t.me/CoffeeOrderBot.com
+4. Click on send message. You will be redirected to the Telegram Messenger app and now you start your conversation with the bot.
 
-If you are a user of IPython Notebooks, you can also run NounsExtraction.ipynb followed by Chatbot.ipynb instead.
 
+
+References :- 
+- https://www.codementor.io/garethdwyer/building-a-telegram-bot-using-python-part-1-goi5fncay
 
 
