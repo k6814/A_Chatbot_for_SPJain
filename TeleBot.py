@@ -329,16 +329,9 @@ import random
 
 # In[10]:
 
-#rep = False
-#Help = False
-#repeat = False
 
 def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
-    #global rep
-    #global Help
-    #global repeat
-    q = removePunct(' ' + q.lower() + ' ')
-    
+    q = removePunct(' ' + q.lower() + ' ')    
     if checkQ(q) == False:
         
         query_tokens = q.split()
@@ -461,31 +454,14 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
         chatTracker[chat]['prev'] = ''
         return model.predict(N)[0] + '\n'
 
-
-
- 
-    for word in greetings:
-        if word in query:
-            if checkQ(q) == False:
-                chatTracker[chat]['rep'] = False
-                chatTracker[chat]['prev'] = ''
-                return 'Hello! How may I help you?' + '\n'
-            else:
-                chatTracker[chat]['prev'] = q
-                chatTracker[chat]['rep'] = False
-                chatTracker[chat]['progQ'] = True
-                return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\n and so on..."
-                break
-
-        elif word == greetings[-1]:
-            if chatTracker[chat]['progQ'] == True:
-                chatTracker[chat]['progQ'] = False
-                Lc = [tf(word, "list of courses") for word in vocabulary2]
-                return "Well...\n " + model.predict(Lc)[0]
-            chatTracker[chat]['prev'] = q
-            chatTracker[chat]['rep'] = False
-            chatTracker[chat]['progQ'] = True
-            return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\nand so on..."
-            
+    if chatTracker[chat]['progQ'] == True:
+        chatTracker[chat]['progQ'] = False
+        Lc = [tf(word, "list of courses") for word in vocabulary2]
+        return "Well...\n " + model.predict(Lc)[0]
+    chatTracker[chat]['prev'] = q
+    chatTracker[chat]['rep'] = False
+    chatTracker[chat]['progQ'] = True
+    return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\nand so on..."
+    
 
 
