@@ -6,7 +6,7 @@
 
 a = []
 import TeleBot
-
+print("imported_telebot")
 
 # In[ ]:
 
@@ -16,7 +16,7 @@ import requests
 import time
 
 
-TOKEN = ''
+TOKEN = '740912657:AAGKwEcyZAAUH5xr8I8wUNHyMwXYoJkfSFs'
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
                 
 
@@ -48,6 +48,10 @@ def dictIDs():
         TeleBot.chatTracker[ID] = {}
         TeleBot.chatTracker[ID]['c'] = ''
         TeleBot.chatTracker[ID]['prev'] = ''
+        TeleBot.chatTracker[ID]['rep'] = False
+        TeleBot.chatTracker[ID]['Help'] = False
+        TeleBot.chatTracker[ID]['repeat'] = False
+        TeleBot.chatTracker[ID]['progQ'] = False
 
 
 def get_last_update_id(updates):
@@ -56,7 +60,7 @@ def get_last_update_id(updates):
         update_ids.append(int(update["update_id"]))
     return max(update_ids)
 
-
+#q, chat, c, prev, rep, Help, repeat, progQ
 def echo_all(updates):
     for i in get_updates()['result']:
         if i['message']['from']['id'] not in TeleBot.chatTracker:
@@ -64,11 +68,20 @@ def echo_all(updates):
             TeleBot.chatTracker[ID] = {}
             TeleBot.chatTracker[ID]['c'] = ''
             TeleBot.chatTracker[ID]['prev'] = ''
+            TeleBot.chatTracker[ID]['rep'] = False
+            TeleBot.chatTracker[ID]['Help'] = False
+            TeleBot.chatTracker[ID]['repeat'] = False
+            TeleBot.chatTracker[ID]['progQ'] = False
     for update in updates["result"]:
         text = update["message"]["text"]
         chat = update["message"]["chat"]["id"]
         if text != '/start':
-            send_message(TeleBot.spjBot(text, chat, TeleBot.chatTracker[chat]['c'], TeleBot.chatTracker[chat]['prev']), chat)
+            send_message(TeleBot.spjBot(text, chat, TeleBot.chatTracker[chat]['c'], \
+                                        TeleBot.chatTracker[chat]['prev'], \
+                                        TeleBot.chatTracker[chat]['rep'], \
+                                        TeleBot.chatTracker[chat]['Help'], \
+                                        TeleBot.chatTracker[chat]['repeat'], \
+                                        TeleBot.chatTracker[chat]['progQ']), chat)
 
 
 def get_last_chat_id_and_text(updates):
@@ -97,6 +110,10 @@ def main():
                 TeleBot.chatTracker[ID] = {}
                 TeleBot.chatTracker[ID]['c'] = ''
                 TeleBot.chatTracker[ID]['prev'] = ''
+                TeleBot.chatTracker[ID]['rep'] = False
+                TeleBot.chatTracker[ID]['Help'] = False
+                TeleBot.chatTracker[ID]['repeat'] = False
+                TeleBot.chatTracker[ID]['progQ'] = False
         updates = get_updates(last_update_id)
         if len(updates["result"]) > 0:
             last_update_id = get_last_update_id(updates) + 1

@@ -296,7 +296,7 @@ defaultResp = {
 
 courseList = ['- ' + i[0].title().replace('&', 'and') for i in courseNames.values()]
 
-greetings = [' hi ', ' hello ', ' how are you', ' are you there', ' there?', ' hey ', ' good morning', ' good afternoon', ' good evening', ' yo ']
+greetings = ['hi', 'hello', 'how are you', 'are you there', 'there?', 'hey ', 'good morning', 'good afternoon', 'good evening', 'yo']
 
 thanks = ['thanks', 'thank', 'thx', 'thnx', 'thnks', 'thnk','thanka']
 end = ['bye', 'okay', 'ok', 'cool', 'sure']
@@ -331,12 +331,13 @@ import random
 
 
 def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
+    print(c)
     q = removePunct(' ' + q.lower() + ' ')    
     if checkQ(q) == False:
         
         query_tokens = q.split()
         
-        if set(thanks).disjoint(query_tokens) == False:
+        if set(thanks).isdisjoint(query_tokens) == False:
             chatTracker[chat]['progQ'] = False
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['rep'] = False
@@ -344,30 +345,32 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
                 return "It's my pleasure to have helped you. All the best!" + '\n'
             else:
                 return 'Good Luck!'
-        elif set(end).disjoint(query_tokens) == False:
+        elif set(end).isdisjoint(query_tokens) == False:
             return 'Good Luck!'
 
-        elif set(greetings).disjoint(query_tokens) == False:
+        elif set(greetings).isdisjoint(query_tokens) == False:
             chatTracker[chat]['progQ'] = False
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['rep'] = False
             return 'Hi. Let me know if you need any help.'
     
-    q = q + chatTracker[chat]['prev']
+    q = q + ' ' + chatTracker[chat]['prev']
     query = chatTracker[chat]['c'] + ' ' + q 
+    print(query)
     
 
     N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
     probability = max(model.predict_proba(N)[0])
     
-    name = max([n for n in courseNamesList if n in q], key=len) #Returns the courseName if found in the dictionary courseNames
+    name = max([n for n in courseNamesList if n in q], key=len, default='') #Returns the courseName if found in the dictionary courseNames
     course = [k for k,v in courseNames.items() if any(cn in q for cn in v)] #Returns the appropriate key of the dictionary courseNames
     
     if len(course)>0:   #if a course has been mentioned by user
+        course = course[0]
         chatTracker[chat]['progQ'] = False
         chatTracker[chat]['Help'] = True
         chatTracker[chat]['prev'] = ''
-        chatTracker[chat]['c'] = ' ' + course[0]
+        chatTracker[chat]['c'] = ' ' + course
         query = q.replace(name, ' ' + str(course) + ' ')
         #Q = [tf(word, query) for word in vocabulary]
         N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
@@ -381,54 +384,46 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
             return "What do you want to know about the " + courseNames[course][0].replace('&', 'and') + " program? \nYou can ask about the fees, duration, scholarships and so on"
         elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
             if rep == False:
-                chatTracker[chat]['c'] = ''
                 return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
             else:
                 chatTracker[chat]['rep'] = False
                 chatTracker[chat]['Help'] = False
-                chatTracker[chat]['c'] = ''
                 return 'Our course representative may be able to help you on this.'
         else:
             if rep == False:
-                chatTracker[chat]['c'] = ''
                 return defaultResp[course] + '\n'
             else:
                 chatTracker[chat]['rep'] = False
                 chatTracker[chat]['Help'] = False
-                chatTracker[chat]['c'] = ''
                 return 'Our course representative may be able to help you on this.'
 
 
     else:
-        name = max([n for n in courseNamesList if n in q], key=len) #Returns the courseName if found in the dictionary courseNames
-        course = [k for k,v in courseNames.items() if any(cn in q for cn in v)] #Returns the appropriate key of the dictionary courseNames
+        name = max([n for n in courseNamesList if n in query], key=len, default = '') #Returns the courseName if found in the dictionary courseNames
+        course = [k for k,v in courseNames.items() if any(cn in query for cn in v)] #Returns the appropriate key of the dictionary courseNames
         
         if len(course)>0:
+            course = course[0]
             chatTracker[chat]['progQ'] = False
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['Help'] = True
             query = query.replace(name, ' ' + course + ' ')
-            N = [tf(word, query) for word in vocabulary2]
+            N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
             prob = max(max(model.predict_proba(N)))
             if prob>0.35:
                 return model.predict(N)[0] + '\n'
             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
                 if repeat == False:
-
-                    chatTracker[chat]['c'] = ''
                     return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
                 else:
                     chatTracker[chat]['Help'] = False
-                    chatTracker[chat]['c'] = ''
                     chatTracker[chat]['repeat'] = False
                     return 'Our course representative may be able to help you on this.'
             else:
                 if repeat == False:
-                    chatTracker[chat]['c'] = ''
                     return defaultResp[course] + '\n'
                 else:
                     chatTracker[chat]['Help'] = False
-                    chatTracker[chat]['c'] = ''
                     chatTracker[chat]['repeat'] = False
                     return 'Our course representative may be able to help you on this.'    
 
@@ -441,7 +436,7 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
     if chatTracker[chat]['progQ'] == True:
         chatTracker[chat]['progQ'] = False
         Lc = [tf(word, "list of courses") for word in vocabulary2]
-        return "Well...\n " + model.predict(Lc)[0]
+        return "Well...\n " + np.array(model.predict(Lc)[0]).reshape(1,-1)
     chatTracker[chat]['prev'] = q
     chatTracker[chat]['rep'] = False
     chatTracker[chat]['progQ'] = True
