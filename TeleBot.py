@@ -381,10 +381,6 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
             return "What do you want to know about the " + courseNames[course][0].replace('&', 'and') + " program? \nYou can ask about the fees, duration, scholarships and so on"
         elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
             if rep == False:
-                #rep = True
-                #chatTracker[chat]['rep'] = True
-                #repeat = True
-                #chatTracker[chat]['repeat'] = True
                 chatTracker[chat]['c'] = ''
                 return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
             else:
@@ -394,10 +390,6 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
                 return 'Our course representative may be able to help you on this.'
         else:
             if rep == False:
-                #repeat = True
-                #chatTracker[chat]['repeat'] = True
-                #rep = True
-                #chatTracker[chat]['rep'] = True
                 chatTracker[chat]['c'] = ''
                 return defaultResp[course] + '\n'
             else:
@@ -416,17 +408,13 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['Help'] = True
             query = query.replace(name, ' ' + course + ' ')
-            #Q = [tf(word, query) for word in vocabulary]
             N = [tf(word, query) for word in vocabulary2]
             prob = max(max(model.predict_proba(N)))
             if prob>0.35:
                 return model.predict(N)[0] + '\n'
             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
                 if repeat == False:
-                    #repeat = True
-                    #chatTracker[chat]['repeat'] = True
-                    #rep = True
-                    #chatTracker[chat]['rep'] = True
+
                     chatTracker[chat]['c'] = ''
                     return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
                 else:
@@ -436,10 +424,6 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
                     return 'Our course representative may be able to help you on this.'
             else:
                 if repeat == False:
-                    #repeat = True
-                    #chatTracker[chat]['repeat'] = True
-                    #rep = True
-                    #chatTracker[chat]['rep'] = True
                     chatTracker[chat]['c'] = ''
                     return defaultResp[course] + '\n'
                 else:
