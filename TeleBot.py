@@ -4,6 +4,7 @@
 #%%
 
 import pandas as pd
+import numpy as np
 #%%
 
 df = pd.read_excel('Data.xlsx')
@@ -77,13 +78,14 @@ for doc in mydoclist:
 
 mydoclist = list(df.Nouns)
 
-from collections import Counter
 for doc in mydoclist:
     tf = Counter()
     for word in doc.split():
         tf[word] +=1
-    #print (tf.items())    
-
+    #print (tf.items())  
+    
+def tf(term, document):
+    return freq(term, document)
 
 vocabulary2= build_lexicon(mydoclist)
 
@@ -271,6 +273,9 @@ courseNames = {
     'fintech': ['financial technology', 'finance technology', 'professional finance course', 'finance course', 'fintech']              
 }
 
+from itertools import chain
+courseNamesList = list(chain.from_iterable(courseNames.values()))
+
 defaultResp = {
     'bdva' : 'You can have a word with Mr. Rakesh Shetty, M: +91- xxxxxxx131 | Email id rakesh.shetty@spjain.org. He handles all the application for the Big Data and Visual Analytics Course.',
     'dmm' : 'I would like to inform you that we have our Admissions Manager Mr. Ashutosh Kulkarni, based out of Mumbai.  He handles all applications for Digital Marketing and Metrics . You can get in touch with him directly. His contact details are tel no +91 9702896668, email id ashutosh.kulkarni@spjain.org . He would be your point of contact as far as DMM @ S P Jain is concerned.',
@@ -332,195 +337,155 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
     #global rep
     #global Help
     #global repeat
-    new = False
-    q = ' ' + q.lower() + ' '
+    q = removePunct(' ' + q.lower() + ' ')
     
     if checkQ(q) == False:
-        thwords = sum([i in thanks for i in removePunct(q).split()])
-        endwords = sum([i in end for i in removePunct(q).split()])
-        hellowords = sum([i in greetings for i in removePunct(q).split()])
         
-        if thwords>=1:
+        query_tokens = q.split()
+        
+        if set(thanks).disjoint(query_tokens) == False:
             chatTracker[chat]['progQ'] = False
-            new = True
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['rep'] = False
-            if Help == True:
+            if chatTracker[chat]['Help'] == True:
                 return "It's my pleasure to have helped you. All the best!" + '\n'
             else:
                 return 'Good Luck!'
-        elif endwords>=1:
+        elif set(end).disjoint(query_tokens) == False:
             return 'Good Luck!'
 
-        elif hellowords>=1:
+        elif set(greetings).disjoint(query_tokens) == False:
             chatTracker[chat]['progQ'] = False
-            new = True
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['rep'] = False
             return 'Hi. Let me know if you need any help.'
-        
-                
-    q = removePunct(q) + ' ' + chatTracker[chat]['prev']
-    query = chatTracker[chat]['c'] + ' ' + q
+    
+    q = q + chatTracker[chat]['prev']
+    query = chatTracker[chat]['c'] + ' ' + q 
     
 
-    N = [tf(word, query) for word in vocabulary2]
-    probability = max(max(model.predict_proba(N)))
-    find = False
-    fin = False
-    counter = 0
-    for course in sorted(courseNames):
-        if find:
-            break
-        else:    
-            for name in courseNames[course]:
-                counter +=1
-                if name in q:
-                    chatTracker[chat]['progQ'] = False
-                    find = True
-                    new = True
-                    Help = True
-                    chatTracker[chat]['Help'] = True
-                    prev = ''
-                    chatTracker[chat]['prev'] = ''
-                    chatTracker[chat]['c'] = ' ' + course
-                    query = q.replace(name, ' ' + str(course) + ' ')
-                    #Q = [tf(word, query) for word in vocabulary]
-                    N = [tf(word, query) for word in vocabulary2]
-                    prob = max(max(model.predict_proba(N)))
-                    if prob>0.35:
-                        rep = False
-                        chatTracker[chat]['rep'] = False
-                        return model.predict(N)[0] + '\n'
-                    elif (len(name.split()) == len(q.split()) or sum(N) < 2) and probability < 0.3:
-                        chatTracker[chat]['progQ'] = False
-                        return "What do you want to know about the " + courseNames[course][0].replace('&', 'and') + " program? \nYou can ask about the fees, duration, scholarships and so on"
-                    elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
-                        if rep == False:
-                            #rep = True
-                            #chatTracker[chat]['rep'] = True
-                            #repeat = True
-                            #chatTracker[chat]['repeat'] = True
-                            chatTracker[chat]['c'] = ''
-                            return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
-                        else:
-                            rep = False
-                            chatTracker[chat]['rep'] = False
-                            Help = False
-                            chatTracker[chat]['Help'] = False
-                            chatTracker[chat]['c'] = ''
-                            return 'Our course representative may be able to help you on this.'
-                    else:
-                        if rep == False:
-                            #repeat = True
-                            #chatTracker[chat]['repeat'] = True
-                            #rep = True
-                            #chatTracker[chat]['rep'] = True
-                            chatTracker[chat]['c'] = ''
-                            return defaultResp[course] + '\n'
-                        else:
-                            rep = False
-                            chatTracker[chat]['rep'] = False
-                            Help = False
-                            chatTracker[chat]['Help'] = False
-                            chatTracker[chat]['c'] = ''
-                            return 'Our course representative may be able to help you on this.'
-                    #break
-                    
-                elif counter == 97:
-                    for course in sorted(courseNames):
-                        if fin:
-                            break
-                        else:
-                            for name in courseNames[course]:
-                                if name in query:
-                                    chatTracker[chat]['progQ'] = False
-                                    prev = ''
-                                    chatTracker[chat]['prev'] = ''
-                                    fin = True
-                                    new = True
-                                    Help = True
-                                    chatTracker[chat]['Help'] = True
-                                    query = query.replace(name, ' ' + course + ' ')
-                                    #Q = [tf(word, query) for word in vocabulary]
-                                    N = [tf(word, query) for word in vocabulary2]
-                                    prob = max(max(model.predict_proba(N)))
-                                    if prob>0.35:
-                                        return model.predict(N)[0] + '\n'
-                                    elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
-                                        if repeat == False:
-                                            #repeat = True
-                                            #chatTracker[chat]['repeat'] = True
-                                            #rep = True
-                                            #chatTracker[chat]['rep'] = True
-                                            chatTracker[chat]['c'] = ''
-                                            return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
-                                        else:
-                                            Help = False
-                                            chatTracker[chat]['Help'] = False
-                                            chatTracker[chat]['c'] = ''
-                                            chatTracker[chat]['repeat'] = False
-                                            return 'Our course representative may be able to help you on this.'
-                                    else:
-                                        if repeat == False:
-                                            #repeat = True
-                                            #chatTracker[chat]['repeat'] = True
-                                            #rep = True
-                                            #chatTracker[chat]['rep'] = True
-                                            chatTracker[chat]['c'] = ''
-                                            return defaultResp[course] + '\n'
-                                        else:
-                                            Help = False
-                                            chatTracker[chat]['Help'] = False
-                                            chatTracker[chat]['c'] = ''
-                                            chatTracker[chat]['repeat'] = False
-                                            return 'Our course representative may be able to help you on this.'
-                                        #break
-                
+    N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
+    probability = max(model.predict_proba(N)[0])
+    
+    name = max([n for n in courseNamesList if n in q], key=len) #Returns the courseName if found in the dictionary courseNames
+    course = [k for k,v in courseNames.items() if any(cn in q for cn in v)] #Returns the appropriate key of the dictionary courseNames
+    
+    if len(course)>0:   #if a course has been mentioned by user
+        chatTracker[chat]['progQ'] = False
+        chatTracker[chat]['Help'] = True
+        chatTracker[chat]['prev'] = ''
+        chatTracker[chat]['c'] = ' ' + course[0]
+        query = q.replace(name, ' ' + str(course) + ' ')
+        #Q = [tf(word, query) for word in vocabulary]
+        N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
+        prob = max(max(model.predict_proba(N)))
+        if prob>0.35:
+            rep = False
+            chatTracker[chat]['rep'] = False
+            return model.predict(N)[0] + '\n'
+        elif (len(name.split()) == len(q.split()) or sum(N) < 2) and probability < 0.3:
+            chatTracker[chat]['progQ'] = False
+            return "What do you want to know about the " + courseNames[course][0].replace('&', 'and') + " program? \nYou can ask about the fees, duration, scholarships and so on"
+        elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
+            if rep == False:
+                #rep = True
+                #chatTracker[chat]['rep'] = True
+                #repeat = True
+                #chatTracker[chat]['repeat'] = True
+                chatTracker[chat]['c'] = ''
+                return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
+            else:
+                chatTracker[chat]['rep'] = False
+                chatTracker[chat]['Help'] = False
+                chatTracker[chat]['c'] = ''
+                return 'Our course representative may be able to help you on this.'
+        else:
+            if rep == False:
+                #repeat = True
+                #chatTracker[chat]['repeat'] = True
+                #rep = True
+                #chatTracker[chat]['rep'] = True
+                chatTracker[chat]['c'] = ''
+                return defaultResp[course] + '\n'
+            else:
+                chatTracker[chat]['rep'] = False
+                chatTracker[chat]['Help'] = False
+                chatTracker[chat]['c'] = ''
+                return 'Our course representative may be able to help you on this.'
 
-        if find == False and fin == False:   
-            if probability > 0.4:
-                Help = True
-                chatTracker[chat]['Help'] = True
-                new = True
-                prev = ''
-                rep = False
+
+    else:
+        name = max([n for n in courseNamesList if n in q], key=len) #Returns the courseName if found in the dictionary courseNames
+        course = [k for k,v in courseNames.items() if any(cn in q for cn in v)] #Returns the appropriate key of the dictionary courseNames
+        
+        if len(course)>0:
+            chatTracker[chat]['progQ'] = False
+            chatTracker[chat]['prev'] = ''
+            chatTracker[chat]['Help'] = True
+            query = query.replace(name, ' ' + course + ' ')
+            #Q = [tf(word, query) for word in vocabulary]
+            N = [tf(word, query) for word in vocabulary2]
+            prob = max(max(model.predict_proba(N)))
+            if prob>0.35:
+                return model.predict(N)[0] + '\n'
+            elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
+                if repeat == False:
+                    #repeat = True
+                    #chatTracker[chat]['repeat'] = True
+                    #rep = True
+                    #chatTracker[chat]['rep'] = True
+                    chatTracker[chat]['c'] = ''
+                    return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
+                else:
+                    chatTracker[chat]['Help'] = False
+                    chatTracker[chat]['c'] = ''
+                    chatTracker[chat]['repeat'] = False
+                    return 'Our course representative may be able to help you on this.'
+            else:
+                if repeat == False:
+                    #repeat = True
+                    #chatTracker[chat]['repeat'] = True
+                    #rep = True
+                    #chatTracker[chat]['rep'] = True
+                    chatTracker[chat]['c'] = ''
+                    return defaultResp[course] + '\n'
+                else:
+                    chatTracker[chat]['Help'] = False
+                    chatTracker[chat]['c'] = ''
+                    chatTracker[chat]['repeat'] = False
+                    return 'Our course representative may be able to help you on this.'    
+
+    if probability > 0.4:
+        chatTracker[chat]['Help'] = True
+        chatTracker[chat]['rep'] = False
+        chatTracker[chat]['prev'] = ''
+        return model.predict(N)[0] + '\n'
+
+
+
+ 
+    for word in greetings:
+        if word in query:
+            if checkQ(q) == False:
                 chatTracker[chat]['rep'] = False
                 chatTracker[chat]['prev'] = ''
-                return model.predict(N)[0] + '\n'
+                return 'Hello! How may I help you?' + '\n'
+            else:
+                chatTracker[chat]['prev'] = q
+                chatTracker[chat]['rep'] = False
+                chatTracker[chat]['progQ'] = True
+                return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\n and so on..."
+                break
 
-
-            if new == False:
- 
-                for word in greetings:
-                    if word in query:
-                        if checkQ(q) == False:
-                            new = True
-                            prev = ''
-                            rep = False
-                            chatTracker[chat]['rep'] = False
-                            chatTracker[chat]['prev'] = ''
-                            return 'Hello! How may I help you?' + '\n'
-                        else:
-                            new = True
-                            chatTracker[chat]['prev'] = q
-                            rep = False
-                            chatTracker[chat]['rep'] = False
-                            chatTracker[chat]['progQ'] = True
-                            return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\n and so on..."
-                            break
-
-                    elif word == greetings[-1]:
-                        if chatTracker[chat]['progQ'] == True:
-                            chatTracker[chat]['progQ'] = False
-                            Lc = [tf(word, "list of courses") for word in vocabulary2]
-                            return "Well...\n " + model.predict(Lc)[0]
-                        new = True
-                        chatTracker[chat]['prev'] = q
-                        rep = False
-                        chatTracker[chat]['rep'] = False
-                        chatTracker[chat]['progQ'] = True
-                        return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\nand so on..."
-                        
+        elif word == greetings[-1]:
+            if chatTracker[chat]['progQ'] == True:
+                chatTracker[chat]['progQ'] = False
+                Lc = [tf(word, "list of courses") for word in vocabulary2]
+                return "Well...\n " + model.predict(Lc)[0]
+            chatTracker[chat]['prev'] = q
+            chatTracker[chat]['rep'] = False
+            chatTracker[chat]['progQ'] = True
+            return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\nand so on..."
+            
 
 
