@@ -261,9 +261,8 @@ courseNames = {
     'dmm' : ['digital marketing & metrics', 'digital marketing and metrics', 'digital marketing', 'digital metrics', 'dmm'],
     'rm' : ['retail management', 'retail', ' rm'],
     'emba': ['executive master of business administration', 'executive masters of business administration', 'executive master in business administration', 'executive masters in business administration', 'executive mba', 'executive', 'emba'],
-    'gmba': ['global masters of business administration', 'global master of business administration', 'global masters in business administration', 'global master in business administration', 'global mba', 'globalmba', 'gmba', 'mba'],
+    'gmba': ['global masters of business administration', 'global master of business administration', 'global masters in business administration', 'global master in business administration', 'global mba', 'globalmba', 'gmba', 'mba', 'masters of business administration'],
     'mgb' : ['masters in global business', 'masters of global business', 'master of global business', 'masters in global business', 'master in global business', 'mgb'],
-    'mba' : ['masters of business administration',' mba'],
     'dba' : ['doctor of business administration', 'doctorate of business administration', 'business administration doctorate', 'doctor in business administration', 'business doctorate', 'doctorate', 'doctor', 'dba'],
     'gfmb' : ['global family managed business', 'family managed business', 'family business', 'global fmb', 'gfmb', 'fmb'],
     'bba' : ['bachelor of business administration', 'bachelor in business administration', 'bachelors in business administration', 'bachelors of business administration', 'business management', 'bba'],
@@ -290,7 +289,7 @@ defaultResp = {
     'bec' : 'I would like to inform you that we have our Admissions Manager Mr. Axxxxx Kxxxx, based in Mumbai.  Axxxxx handles all applications for BBA, BBC and BEC coming from your region. You can get in touch with him directly. His contact details are Tel no +91 xxxxxxxxxx, email id: axxxxx.kxxxx@spjain.org. He would be your point of contact as far as BBA, BBC and BEC @ S P Jain is concerned.',
     'bbc' : 'You can have a word with Mr. Mxxxxx Sxxxxx, M: +91-xxxxxxxxxx  | Email id mxxxx.sxxxx@spjain.org. He handles all the application for the Bachelor Of Business Communication.',
     'mgluxm': 'I would like to inform you that we have our Admissions Manager Ms. Nxxxx Sxxxxx , based out of Mumbai.  She handles all applications for MGLuxM. You can get in touch with her directly. Her contact details are tel no +91 xxxxxxxxxx, email id Nxxxxx.sxxxxx@spjain.org. She would be your point of contact as far as MGLuxM @ S P Jain is concerned.',
-    'fintech': 'I would like to inform you that we have our Admissions Manager Mr.Nxxxxxx Gxxxx , based out of Mumbai.  He handles all applications for Fintech  . You can get in touch with him directly. His contact details are tel no +91 xxxxxxxxxx, email id nxxxx.gxxxx@spjain.org. He would be your point of contact as far as DMM @ S P Jain is concerned.'
+    'fintech': 'I would like to inform you that we have our Admissions Manager Mr.Nxxxxxx Gxxxx , based out of Mumbai.  He handles all applications for Fintech  . You can get in touch with him directly. His contact details are tel no +91 xxxxxxxxxx, email id nxxxx.gxxxx@spjain.org. He would be your point of contact as far as Fintech @ S P Jain is concerned.'
     
 }
 
@@ -316,7 +315,11 @@ def removePunct(S):
     return ' '.join(tokenizer.tokenize(S))
 
 
+#%%
+from difflib import SequenceMatcher
 
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 
 #%%
 
@@ -331,7 +334,6 @@ import random
 
 
 def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
-    print(c)
     q = removePunct(' ' + q.lower() + ' ')    
     if checkQ(q) == False:
         
@@ -356,7 +358,6 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
     
     q = q + ' ' + chatTracker[chat]['prev']
     query = chatTracker[chat]['c'] + ' ' + q 
-    print(query)
     
 
     N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
@@ -378,13 +379,13 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
         if prob>0.35:
             rep = False
             chatTracker[chat]['rep'] = False
-            return model.predict(N)[0] + '\n'
-        elif (len(name.split()) == len(q.split()) or sum(N) < 2) and probability < 0.3:
+            return model.predict(N)[0].replace('&', 'and') + '\n'
+        elif (len(name.split()) == len(q.split()) or sum(N[0]) < 2) and probability < 0.3:
             chatTracker[chat]['progQ'] = False
             return "What do you want to know about the " + courseNames[course][0].replace('&', 'and') + " program? \nYou can ask about the fees, duration, scholarships and so on"
         elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
             if rep == False:
-                return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
+                return model.predict(N)[0].replace('&', 'and') + '\n' + defaultResp[course] + '\n'
             else:
                 chatTracker[chat]['rep'] = False
                 chatTracker[chat]['Help'] = False
@@ -411,10 +412,10 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
             N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
             prob = max(max(model.predict_proba(N)))
             if prob>0.35:
-                return model.predict(N)[0] + '\n'
+                return model.predict(N)[0].replace('&', 'and') + '\n'
             elif prob >= 0.22 and model.predict(N)[0] != defaultResp[course] + ' ':
                 if repeat == False:
-                    return model.predict(N)[0] + '\n' + defaultResp[course] + '\n'
+                    return model.predict(N)[0].replace('&', 'and') + '\n' + defaultResp[course] + '\n'
                 else:
                     chatTracker[chat]['Help'] = False
                     chatTracker[chat]['repeat'] = False
@@ -431,12 +432,12 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
         chatTracker[chat]['Help'] = True
         chatTracker[chat]['rep'] = False
         chatTracker[chat]['prev'] = ''
-        return model.predict(N)[0] + '\n'
+        return model.predict(N)[0].replace('&', 'and') + '\n'
 
     if chatTracker[chat]['progQ'] == True:
         chatTracker[chat]['progQ'] = False
-        Lc = [tf(word, "list of courses") for word in vocabulary2]
-        return "Well...\n " + np.array(model.predict(Lc)[0]).reshape(1,-1)
+        Lc = np.array([tf(word, "list of courses") for word in vocabulary2]).reshape(1,-1)
+        return "Well...\n " + model.predict(Lc)[0].replace('&', 'and')
     chatTracker[chat]['prev'] = q
     chatTracker[chat]['rep'] = False
     chatTracker[chat]['progQ'] = True
