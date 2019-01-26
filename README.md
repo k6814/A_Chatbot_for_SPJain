@@ -1,4 +1,4 @@
-# ChatBot-QA-System-for-S-P-Jain-
+# Chatbot for SP Jain School of Global Management
 
 
 This chatbot has been designed with the intention to answer queries related to admission, programs etc. offered at SP Jain School of Global Management. It aims to resolve queries of the sp jain website visitors
@@ -16,3 +16,7 @@ References :-
 - https://www.codementor.io/garethdwyer/building-a-telegram-bot-using-python-part-1-goi5fncay
 
 
+
+By,  
+Sachit Nagpal <br>
+Kevin Garda
