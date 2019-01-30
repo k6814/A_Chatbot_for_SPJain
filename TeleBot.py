@@ -1,214 +1,36 @@
-
-# coding: utf-8
-
-#%%
-
 import pandas as pd
 import numpy as np
-#%%
+from difflib import SequenceMatcher
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+import random
+from sklearn.feature_extraction.text import CountVectorizer
+import NounsExtraction
+
 
 df = pd.read_excel('Data.xlsx')
-#%% Vectorising Questions
-
-import pandas
-
-mydoclist = list(df.Questions)
-
-from collections import Counter
-for doc in mydoclist:
-    tf = Counter()
-    for word in doc.split():
-        tf[word] +=1
-    #print (tf.items())    
-def build_lexicon(corpus):
-    lexicon = set()
-    for doc in corpus:
-        lexicon.update([word for word in doc.split()])
-    return lexicon
-
-def tf(term, document):
-    return freq(term, document)
-
-def freq(term, document):
-    return document.split().count(term)
-
-vocabulary = build_lexicon(mydoclist)
-
-doc_term_matrix = []
-#print ('Our vocabulary vector is [' + ', '.join(list(vocabulary)) + ']')
-for doc in mydoclist:
-    #print ('The doc is "' + doc + '"')
-    tf_vector = [tf(word, doc) for word in vocabulary]
-    tf_vector_string = ', '.join(format(freq, 'd') for freq in tf_vector)
-    #print ('The tf vector for Document %d is [%s]' % ((mydoclist.index(doc)+1), tf_vector_string))
-    doc_term_matrix.append(tf_vector)
-
-    # here's a test: why did I wrap mydoclist.index(doc)+1 in parens?  it returns an int...
-    # try it!  type(mydoclist.index(doc) + 1)
-
-#print ('All combined, here is our master document term matrix: ')
-#print (doc_term_matrix)
-
-for doc in mydoclist:
-    tf_vector = [tf(word, doc) for word in vocabulary]
-    #print(tf_vector)
-
-t=pandas.DataFrame(columns=[i for i in range(0,1348) ])
-cntr = 0
-for doc in mydoclist:
-    #print ('The doc is "' + doc + '"')
-    tf_vector = [tf(word, doc) for word in vocabulary]
-    tf_vector_string = ', '.join(format(freq, 'd') for freq in tf_vector)
-    #print (tf_vector_string)
-    c=[i for i in range(1348)]
-    #print(tf_vector)
-    if cntr == 0:
-        test = pandas.DataFrame([tf_vector])
-        #print(cntr)
-        #print(test)
-    else:
-        test = test.append([tf_vector])
-#         print(cntr)
-#         print(test)
-    cntr += 1
-    #print(cntr)
-
-
-# %% Vectorising Key Words in Question
-
-mydoclist = list(df.Nouns)
-
-for doc in mydoclist:
-    tf = Counter()
-    for word in doc.split():
-        tf[word] +=1
-    #print (tf.items())  
-    
-def tf(term, document):
-    return freq(term, document)
-
-vocabulary2= build_lexicon(mydoclist)
-
-doc_term_matrix = []
-#print ('Our vocabulary vector is [' + ', '.join(list(vocabulary)) + ']')
-for doc in mydoclist:
-    #print ('The doc is "' + doc + '"')
-    tf_vector = [tf(word, doc) for word in vocabulary2]
-    tf_vector_string = ', '.join(format(freq, 'd') for freq in tf_vector)
-    #print ('The tf vector for Document %d is [%s]' % ((mydoclist.index(doc)+1), tf_vector_string))
-    doc_term_matrix.append(tf_vector)
-
-
-
-for doc in mydoclist:
-    tf_vector = [tf(word, doc) for word in vocabulary2]
-    #print(tf_vector)
-
-t=pandas.DataFrame(columns=[i for i in range(0,1348) ])
-cntr = 0
-for doc in mydoclist:
-    #print ('The doc is "' + doc + '"')
-    tf_vector = [tf(word, doc) for word in vocabulary2]
-    f_vector_string = ', '.join(format(freq, 'd') for freq in tf_vector)
-    #print (tf_vector_string)
-    c=[i for i in range(1348)]
-    #print(tf_vector)
-    if cntr == 0:
-        test2= pandas.DataFrame([tf_vector])
-        #print(cntr)
-        #print(test)
-    else:
-        test2= test2.append([tf_vector])
-        #print(cntr)
-        #print(test)
-    cntr += 1
-    #print(cntr)
-
-
-#%%
-
-test2C = test2.copy()
-
-
-# In[72]:
-
-test2C.columns = range(test.shape[1], test.shape[1]+ test2.shape[1])
-
-
-# In[73]:
-
-test2.index = range(len(test2))
-test.index = range(len(test))
-test2C.index = range(len(test2C))
-
-
-# In[74]:
-
-test3 = pd.concat([test.reset_index(drop=True), test2C], axis=1)
-
-#test has vectorised questions in dataframe. test2 does the same for nouns. test3 dataframe concatenates test and test2
-
-
-# In[75]:
-
-test['Question'] = list(df.Questions)
-test['Answer'] = list(df.Answers)
-
-
-# In[76]:
-
-test2['Question'] = list(df.Questions)
-test2['Answer'] = list(df.Answers)
-
-
-# In[77]:
-
-test3['Question'] = list(df.Questions)
-test3['Answer'] = list(df.Answers)
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
-
-
-# <br><br>
-
-# ### Applying Random Forest 
-
-# In[78]:
-
+vectorizer = CountVectorizer() 
+X=vectorizer.fit_transform(list(df.Nouns))
+test=pd.DataFrame(X.toarray())
+test["Question"]=df.Questions
+test["Answer"]=df.Answers
 TestDF = pd.DataFrame()
 TrainDF = pd.DataFrame()
+
+
 def RFModel(df, test_size=0.1):
     global TestDF
     global TrainDF
     global model
-    #from sklearn.metrics import accuracy_score
     df = df[df.Answer.isnull() == False]
-    df.index = range(len(df))
-    from sklearn.model_selection import train_test_split
+    df.index = range(len(df))    
     X = df[list(range(df.shape[1]-2))]
     y = df['Answer']
     y = y.astype('category')
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = test_size)
-    #Import Library
-    from sklearn.ensemble import RandomForestClassifier #use RandomForestRegressor for regression problem
-    #Assumed you have, X (predictor) and Y (target) for training data set and x_test(predictor) of test_dataset
-    # Create Random Forest object
     model= RandomForestClassifier(max_features= 'auto' ,n_estimators= 200)
-    # Train the model using the training sets and check score
-    #model.fit(X, y)
-    #from sklearn import tree
-    #model = tree.DecisionTreeClassifier(criterion='gini')
     model.fit(X_train, y_train)
     model.score(X_train, y_train)
-    #Predict Output
     if test_size > 0.01:
         testPredicted= model.predict(X_test)
         test = pd.DataFrame(df.loc[list(X_test.index)])
@@ -219,8 +41,6 @@ def RFModel(df, test_size=0.1):
         for i in ps:
             prob.append(max(i))
         TestDF['Prediction Probability'] = prob
-        #testAcc = accuracy_score(y_test, testPredicted)
-        #print('Test accuracy is {}'.format(testAcc))
     trainPredicted = model.predict(X_train)
     train = pd.DataFrame(df.loc[list(X_train.index)])
     TrainDF = train[['Question']]
@@ -230,32 +50,11 @@ def RFModel(df, test_size=0.1):
     for i in ps:
         tprob.append(max(i))
     TrainDF['Prediction Probability'] = tprob
-    #trainAcc = accuracy_score(y_train, trainPredicted)
-    #print('Training accuracy is {}'.format(trainAcc))
 
-
-# %%
-RFModel(test2)
-
-
-# %%
+    
+RFModel(test)
 TestDF.to_excel('new.xlsx')
-
-
-# %%
-
 TrainDF.to_excel('trainRF.xlsx')
-
-
-# In[83]:
-
-RFModel(test2, test_size=0)
-
-
-# ### Creating rules, fallback responses etc. 
-
-# In[1]:
-
 courseNames = {
     'bdva' : ['big data & visual analytics', 'big data & analytics', 'big data and visual analytics', 'big data and analytics'  'big data analytics', 'data analytics','business analytics', 'big data', 'data science', 'analytics', 'data mining', 'data', 'visualisation','machine learning', 'artificial intelligence', 'bdap', 'bdva', 'bdvap', 'visual analytics'],
     'dmm' : ['digital marketing & metrics', 'digital marketing and metrics', 'digital marketing', 'digital metrics', 'dmm'],
@@ -294,14 +93,10 @@ defaultResp = {
 }
 
 courseList = ['- ' + i[0].title().replace('&', 'and') for i in courseNames.values()]
-
 greetings = ['hi', 'hello', 'how are you', 'are you there', 'there?', 'hey ', 'good morning', 'good afternoon', 'good evening', 'yo']
-
 thanks = ['thanks', 'thank', 'thx', 'thnx', 'thnks', 'thnk','thanka']
 end = ['bye', 'okay', 'ok', 'cool', 'sure']
 
-
-# In[2]:
 
 def checkQ(j):
     if '?' in j or 'what ' in j or 'do' in j or 'can' in j     or j[0:2].lower() == 'is' or j[0:5].lower()=='would' or 'how ' in j:
@@ -309,28 +104,18 @@ def checkQ(j):
     else:
         return False
 
+    
 def removePunct(S):
     from nltk.tokenize import RegexpTokenizer
     tokenizer = RegexpTokenizer(r'\w+')
     return ' '.join(tokenizer.tokenize(S))
 
 
-#%%
-from difflib import SequenceMatcher
-
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
-#%%
-
-# Defining the chatbot function. Integrates random forest predictions, rules, fallback answers etc. It takes user input, responds to it, and asks for further input from user. Input 'quit' to stop the function.
 
 chatTracker = {}
-
-import random
-
-
-# In[10]:
 
 
 def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
@@ -360,7 +145,7 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
     query = chatTracker[chat]['c'] + ' ' + q 
     
 
-    N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
+    N=vectorizer.transform([NounsExtraction.pos_tagging(query)]).toarray()
     probability = max(model.predict_proba(N)[0])
     
     name = max([n for n in courseNamesList if n in q], key=len, default='') #Returns the courseName if found in the dictionary courseNames
@@ -373,8 +158,7 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
         chatTracker[chat]['prev'] = ''
         chatTracker[chat]['c'] = ' ' + course
         query = q.replace(name, ' ' + str(course) + ' ')
-        #Q = [tf(word, query) for word in vocabulary]
-        N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
+        N=vectorizer.transform([NounsExtraction.pos_tagging(query)]).toarray()
         prob = max(max(model.predict_proba(N)))
         if prob>0.35:
             rep = False
@@ -398,7 +182,6 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
                 chatTracker[chat]['Help'] = False
                 return 'Our course representative may be able to help you on this.'
 
-
     else:
         name = max([n for n in courseNamesList if n in query], key=len, default = '') #Returns the courseName if found in the dictionary courseNames
         course = [k for k,v in courseNames.items() if any(cn in query for cn in v)] #Returns the appropriate key of the dictionary courseNames
@@ -409,7 +192,7 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
             chatTracker[chat]['prev'] = ''
             chatTracker[chat]['Help'] = True
             query = query.replace(name, ' ' + course + ' ')
-            N = np.array([tf(word, query) for word in vocabulary2]).reshape(1,-1)
+            N=vectorizer.transform([NounsExtraction.pos_tagging(query)]).toarray()
             prob = max(max(model.predict_proba(N)))
             if prob>0.35:
                 return model.predict(N)[0].replace('&', 'and') + '\n'
@@ -442,6 +225,4 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
     chatTracker[chat]['rep'] = False
     chatTracker[chat]['progQ'] = True
     return 'May I know which program you are looking for?' + '\n\n' + "Some of the various courses we offer are:\n\n" + '\n'.join(random.sample(courseList, 3)) + "\nand so on..."
-    
-
 
