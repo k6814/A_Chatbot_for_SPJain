@@ -11,6 +11,10 @@ Due to confidentiality of certain data, chat data transcript used in the project
 1. Create a Telegram account.
 2. Go to t.me/spjbot and type /start to run the bot.
 
+### Data for semantic similarity taken from:
+
+https://www.kaggle.com/c/quora-question-pairs/data
+
 
 References :- 
 - https://www.codementor.io/garethdwyer/building-a-telegram-bot-using-python-part-1-goi5fncay
