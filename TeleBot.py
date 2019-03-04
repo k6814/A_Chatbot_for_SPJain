@@ -219,8 +219,7 @@ def spjBot(q, chat, c, prev, rep, Help, repeat, progQ):
 
     if chatTracker[chat]['progQ'] == True:
         chatTracker[chat]['progQ'] = False
-        Lc = np.array([tf(word, "list of courses") for word in vocabulary2]).reshape(1,-1)
-        return "Well...\n " + model.predict(Lc)[0].replace('&', 'and')
+        return 'Here is the list of courses we offer:\n' +'\n'.join(courseList)
     chatTracker[chat]['prev'] = q
     chatTracker[chat]['rep'] = False
     chatTracker[chat]['progQ'] = True
